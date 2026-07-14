@@ -8,74 +8,116 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#eef0f2; --panel:#ffffff; --ink:#16181d; --muted:#5a6068; --line:#d8dce0;
-    --plate-red:#c8102e; --plate-blue:#0053a0; --plate-yellow:#d9a404; --plate-green:#007a3d;
-    --ok-bg:#e8f5ec; --ok-ink:#1a6b3c; --bad-bg:#fbe9eb; --bad-ink:#b02a37;
+    --bg:#0f1216; --panel:#171b21; --panel2:#1d222a; --ink:#e9ecf1; --muted:#9aa3af; --line:#2a313b;
+    --accent:#5b9bd5; --accent-dim:#3d6f9e;
+    --plate-red:#b8253c; --plate-blue:#2e6db4; --plate-yellow:#c99a1a; --plate-green:#2c8a5b;
+    --ok-bg:rgba(46,164,107,.16); --ok-ink:#5ecf97; --bad-bg:rgba(224,85,99,.14); --bad-ink:#f08795;
+    --warn-bg:rgba(201,154,26,.14); --warn-ink:#e5bd57;
     --mono:'JetBrains Mono',ui-monospace,monospace;
   }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 'Barlow',system-ui,sans-serif}
-  .wrap{max-width:1060px;margin:0 auto;padding:28px 20px 80px}
-  header.top{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:3px solid var(--ink);padding-bottom:14px;margin-bottom:30px}
-  header.top h1{font:700 34px/1 'Barlow Condensed';letter-spacing:.5px;text-transform:uppercase;margin:0}
-  header.top .sub{color:var(--muted)}
-  section.step{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:22px 24px;margin-bottom:22px}
-  .stephead{display:flex;align-items:center;gap:14px;margin-bottom:14px}
-  .plate{width:44px;height:44px;border-radius:50%;flex:0 0 44px;display:flex;align-items:center;justify-content:center;
-         color:#fff;font:700 20px 'Barlow Condensed';box-shadow:inset 0 0 0 4px rgba(255,255,255,.35), inset 0 0 0 12px rgba(0,0,0,.12)}
+  ::selection{background:var(--accent-dim);color:#fff}
+  .wrap{max-width:1080px;margin:0 auto;padding:34px 20px 90px}
+
+  header.top{margin-bottom:34px;border-bottom:1px solid var(--line);padding-bottom:22px}
+  header.top .kicker{font:600 13px 'Barlow';letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+  header.top h1{font:700 40px/1.05 'Barlow Condensed';letter-spacing:.5px;text-transform:uppercase;margin:0}
+  header.top h1 .arrow{color:var(--accent)}
+  header.top .sub{color:var(--muted);margin-top:8px;max-width:640px}
+
+  section.step{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:24px 26px;margin-bottom:24px}
+  .stephead{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+  .plate{width:46px;height:46px;border-radius:50%;flex:0 0 46px;display:flex;align-items:center;justify-content:center;
+         color:#fff;font:700 19px 'Barlow Condensed';
+         box-shadow:inset 0 0 0 4px rgba(255,255,255,.22), inset 0 0 0 13px rgba(0,0,0,.28), 0 2px 8px rgba(0,0,0,.4)}
   .p1{background:var(--plate-red)} .p2{background:var(--plate-blue)} .p3{background:var(--plate-yellow)} .p4{background:var(--plate-green)}
-  .stephead h2{font:600 22px 'Barlow Condensed';text-transform:uppercase;letter-spacing:.4px;margin:0}
-  .stephead .hint{color:var(--muted);font-size:13px;margin:2px 0 0}
-  label{display:block;font-weight:600;font-size:13px;margin:12px 0 4px}
+  .stephead h2{font:600 23px 'Barlow Condensed';text-transform:uppercase;letter-spacing:.5px;margin:0}
+  .stephead .hint{color:var(--muted);font-size:13.5px;margin:3px 0 0}
+
+  label{display:block;font-weight:600;font-size:13px;margin:14px 0 5px;color:#c7cdd6}
   input[type=text],input[type=date],input[type=password],select,textarea{
-    width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;font:inherit;color:var(--ink)}
+    width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:7px;background:var(--panel2);
+    font:inherit;color:var(--ink)}
+  input::placeholder,textarea::placeholder{color:#5f6873}
   textarea{font-family:var(--mono);font-size:12px}
-  input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--plate-blue);outline-offset:1px}
+  select option{background:var(--panel2)}
+  input[type=date]{color-scheme:dark}
+  input:focus,select:focus,textarea:focus,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
   .row{display:flex;gap:14px;flex-wrap:wrap}
   .row>div{flex:1;min-width:160px}
-  button{cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:6px;
-         padding:9px 16px;font:600 14px 'Barlow';transition:opacity .12s}
-  button:hover{opacity:.85}
-  button.ghost{background:#fff;color:var(--ink)}
+  button{cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:#0d1117;border-radius:7px;
+         padding:9px 18px;font:600 14px 'Barlow';transition:filter .12s}
+  button:hover{filter:brightness(1.12)}
+  button.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+  button.ghost:hover{border-color:var(--accent);color:var(--accent);filter:none}
   button:disabled{opacity:.4;cursor:not-allowed}
-  .drop{border:2px dashed var(--line);border-radius:8px;padding:18px;text-align:center;color:var(--muted);margin-top:10px}
-  .drop.over{border-color:var(--plate-blue);color:var(--plate-blue)}
-  .msg{border-radius:6px;padding:10px 12px;font-size:13.5px;margin-top:12px}
-  .msg.ok{background:var(--ok-bg);color:var(--ok-ink)}
-  .msg.warn{background:#fdf3e0;color:#8a5b00}
-  .msg.err{background:var(--bad-bg);color:var(--bad-ink)}
-  table.prev{border-collapse:collapse;width:100%;font-size:12.5px;margin-top:8px}
-  table.prev th{font:600 13px 'Barlow Condensed';text-transform:uppercase;letter-spacing:.4px;text-align:left;
-                border-bottom:2px solid var(--ink);padding:6px 6px;white-space:nowrap}
-  table.prev td{border-bottom:1px solid var(--line);padding:5px 6px;white-space:nowrap;font-variant-numeric:tabular-nums}
-  tr.grp td{background:#f2f4f6;font-weight:600;font-size:13px}
-  .chip{display:inline-block;min-width:44px;text-align:center;border-radius:4px;padding:1px 4px;font-family:var(--mono);font-size:11.5px}
+
+  .drop{border:2px dashed var(--line);border-radius:10px;padding:26px 18px;text-align:center;color:var(--muted);margin-top:12px;
+        transition:border-color .15s,color .15s}
+  .drop.over{border-color:var(--accent);color:var(--accent)}
+  .drop b{color:#c7cdd6}
+
+  .msg{border-radius:8px;padding:11px 13px;font-size:13.5px;margin-top:14px;border:1px solid transparent}
+  .msg.ok{background:var(--ok-bg);color:var(--ok-ink);border-color:rgba(94,207,151,.25)}
+  .msg.warn{background:var(--warn-bg);color:var(--warn-ink);border-color:rgba(229,189,87,.25)}
+  .msg.err{background:var(--bad-bg);color:var(--bad-ink);border-color:rgba(240,135,149,.25)}
+
+  .tablewrap{overflow:auto;max-height:560px;border:1px solid var(--line);border-radius:10px;margin-top:16px}
+  table.prev{border-collapse:collapse;width:100%;font-size:12.5px}
+  table.prev th{font:600 12.5px 'Barlow Condensed';text-transform:uppercase;letter-spacing:.6px;text-align:left;
+                padding:8px 8px;white-space:nowrap;background:var(--panel2);color:#c7cdd6;
+                position:sticky;top:0;z-index:2;border-bottom:1px solid var(--line)}
+  table.prev td{border-bottom:1px solid #222831;padding:5px 8px;white-space:nowrap;font-variant-numeric:tabular-nums}
+  tr.grp td{background:linear-gradient(90deg,rgba(91,155,213,.14),transparent 65%);color:#dbe4ee;
+            font:600 13.5px 'Barlow Condensed';letter-spacing:.5px;text-transform:uppercase;padding:7px 8px}
+  .chip{display:inline-block;min-width:46px;text-align:center;border-radius:4px;padding:1px 4px;margin-right:2px;
+        font-family:var(--mono);font-size:11.5px}
   .chip.v{background:var(--ok-bg);color:var(--ok-ink)}
   .chip.x{background:var(--bad-bg);color:var(--bad-ink);text-decoration:line-through}
-  .chip.o{color:var(--muted)}
-  .filecard{border:1px solid var(--line);border-radius:8px;margin-top:14px}
-  .filecard .fh{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);background:#f7f8f9;border-radius:8px 8px 0 0}
-  .filecard .fh b{font-family:var(--mono);font-size:13px}
-  .filecard pre{margin:0;padding:10px 12px;max-height:220px;overflow:auto;font-family:var(--mono);font-size:11.5px;line-height:1.5}
-  .filecard .fh button{padding:4px 10px;font-size:12px}
+  .chip.o{color:#5f6873}
+
+  .filecard{border:1px solid var(--line);border-radius:10px;margin-top:16px;overflow:hidden}
+  .filecard .fh{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line);background:var(--panel2)}
+  .filecard .fh b{font-family:var(--mono);font-size:13px;color:var(--accent)}
+  .filecard pre{margin:0;padding:12px 14px;max-height:230px;overflow:auto;font-family:var(--mono);font-size:11.5px;line-height:1.55;color:#c9d1da}
+  .filecard .fh button{padding:4px 12px;font-size:12px}
   .spacer{flex:1}
-  .log{font-family:var(--mono);font-size:12px;background:#16181d;color:#d7dce1;border-radius:8px;padding:12px 14px;
-       max-height:260px;overflow:auto;margin-top:14px;display:none;white-space:pre-wrap}
-  .log .lok{color:#7ddca3}.log .lerr{color:#ff9aa5}.log .lwarn{color:#ffd479}
-  details{margin-top:12px}
-  details summary{cursor:pointer;font-weight:600;font-size:13.5px}
+
+  .guide{border:1px solid var(--line);border-radius:10px;background:var(--panel2);margin-top:14px}
+  .guide summary{cursor:pointer;font-weight:600;font-size:14px;padding:12px 16px;list-style:none;display:flex;align-items:center;gap:8px}
+  .guide summary::before{content:"▸";color:var(--accent);transition:transform .15s}
+  .guide[open] summary::before{transform:rotate(90deg)}
+  .guide ol{margin:0;padding:4px 20px 16px 38px;color:#c7cdd6}
+  .guide li{margin-bottom:9px}
+  .guide li b{color:var(--ink)}
+  .guide code,.mono{font-family:var(--mono);font-size:.92em;background:#10141a;border:1px solid var(--line);
+       border-radius:4px;padding:1px 5px;color:#d4dbe4}
+  .guide .note{margin:0 16px 14px;padding:9px 12px;border-left:3px solid var(--accent);background:rgba(91,155,213,.08);
+       font-size:13px;color:#b9c2cd;border-radius:0 6px 6px 0}
+
+  details.alt{margin-top:14px}
+  details.alt summary{cursor:pointer;font-weight:600;font-size:13.5px;color:#c7cdd6}
+  .log{font-family:var(--mono);font-size:12px;background:#0b0e12;color:#c9d1da;border:1px solid var(--line);
+       border-radius:10px;padding:12px 14px;max-height:260px;overflow:auto;margin-top:16px;display:none;white-space:pre-wrap}
+  .log .lok{color:#5ecf97}.log .lerr{color:#f08795}.log .lwarn{color:#e5bd57}
   .small{font-size:13px;color:var(--muted)}
-  a{color:var(--plate-blue)}
+  a{color:var(--accent)}
+  footer{text-align:center;color:var(--muted);font-size:13px;margin-top:10px}
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
-  @media (max-width:640px){ header.top h1{font-size:26px} section.step{padding:16px} }
+  @media (max-width:640px){ header.top h1{font-size:28px} section.step{padding:18px 16px} }
 </style>
 </head>
 <body>
 <div class="wrap">
 
 <header class="top">
-  <h1>BVDK Scoreboard → OpenPowerlifting</h1>
-  <span class="sub">vportal-Ergebnisse als <span style="font-family:var(--mono)">meet-data/bvdk/</span>-Beitrag aufbereiten</span>
+  <div class="kicker">Kraftdreikampf · Datenpipeline</div>
+  <h1>BVDK Scoreboard <span class="arrow">→</span> OpenPowerlifting</h1>
+  <p class="sub">Wandelt Ergebnisseiten von <span class="mono">scoreboard.vportal-online.de</span> in fertige
+  <span class="mono">meet-data/bvdk/</span>-Beiträge um – inklusive Merge Request gegen
+  <span class="mono">openpowerlifting/opl-data</span>. Alles läuft lokal im Browser.</p>
 </header>
 
 <!-- ============ STEP 1: SOURCE ============ -->
@@ -83,31 +125,26 @@
   <div class="stephead">
     <div class="plate p1" aria-hidden="true">25</div>
     <div><h2>Quelle laden</h2>
-      <p class="hint">Scoreboard-Eventseite (z.&nbsp;B. <span style="font-family:var(--mono)">scoreboard.vportal-online.de/BVDK/event/1503</span>) – die Ergebnisdaten stecken im HTML der Seite.</p></div>
+      <p class="hint">Die Ergebnisdaten stecken vollständig im HTML der Scoreboard-Eventseite – inklusive gültig/ungültig je Versuch.</p></div>
   </div>
 
-  <label for="srcUrl">Event-URL</label>
-  <div class="row">
-    <div style="flex:3"><input type="text" id="srcUrl" placeholder="https://scoreboard.vportal-online.de/BVDK/event/1503"></div>
-    <div style="flex:0 0 auto;display:flex;gap:8px;align-items:flex-start">
-      <button id="btnFetch">Direkt abrufen</button>
-      <button id="btnFetchProxy" class="ghost" title="Abruf über allorigins.win, falls der Direktabruf an CORS scheitert">Über Proxy abrufen</button>
+  <div class="guide" style="margin-top:0">
+    <div style="padding:12px 16px;font-size:14px;color:#c7cdd6">
+      <b style="color:var(--ink)">So geht’s:</b> Eventseite im Browser öffnen (z.&nbsp;B.
+      <span class="mono">…/BVDK/event/1503</span>) → <b style="color:var(--ink)">Strg&nbsp;+&nbsp;S</b> →
+      Format <i>„Webseite, nur HTML“</i> → gespeicherte Datei unten ablegen.
+      Alternativ <b style="color:var(--ink)">Strg&nbsp;+&nbsp;U</b> (Quelltext anzeigen), alles kopieren und einfügen.
     </div>
   </div>
-  <p class="small">Der Direktabruf klappt nur, wenn der Server es erlaubt. Zuverlässige Alternative: Seite im Browser öffnen → <b>Strg&nbsp;+&nbsp;S</b> („Webseite, nur HTML“) → Datei hier ablegen. Oder <b>Strg&nbsp;+&nbsp;U</b> (Quelltext), alles kopieren und unten einfügen.</p>
 
-  <div class="drop" id="drop">HTML-Datei hierher ziehen oder <button class="ghost" id="btnPick" style="padding:4px 10px;font-size:13px">Datei wählen</button><input type="file" id="filePick" accept=".html,.htm,.txt" hidden></div>
+  <div class="drop" id="drop"><b>HTML-Datei hierher ziehen</b><br>oder
+    <button class="ghost" id="btnPick" style="padding:5px 12px;font-size:13px;margin-top:8px">Datei wählen</button>
+    <input type="file" id="filePick" accept=".html,.htm,.txt" hidden>
+  </div>
 
-  <details><summary>Quelltext stattdessen einfügen</summary>
+  <details class="alt"><summary>Quelltext stattdessen einfügen</summary>
     <textarea id="srcPaste" rows="6" placeholder="&lt;!DOCTYPE html&gt;&lt;html lang=&quot;de&quot;&gt;…" spellcheck="false"></textarea>
     <div style="margin-top:8px"><button id="btnParsePaste" class="ghost">Eingefügten Quelltext verarbeiten</button></div>
-  </details>
-
-  <details><summary>Optional: Geburtsjahre aus der bvdk.de-Ergebnisseite ergänzen (experimentell)</summary>
-    <p class="small">Das Scoreboard enthält keine Geburtsjahre. Die passende Seite unter <span style="font-family:var(--mono)">bvdk.de/wettkaempfe/results/…</span> enthält sie (Spalte „Geb/KG/Los“). Auch hier: Seite speichern/Quelltext kopieren und ablegen bzw. einfügen – die Jahrgänge werden über Name&nbsp;+&nbsp;Körpergewicht zugeordnet.</p>
-    <div class="drop" id="drop2">bvdk.de-HTML hierher ziehen oder <button class="ghost" id="btnPick2" style="padding:4px 10px;font-size:13px">Datei wählen</button><input type="file" id="filePick2" accept=".html,.htm,.txt" hidden></div>
-    <textarea id="srcPaste2" rows="4" placeholder="Quelltext der bvdk.de-Ergebnisseite …" spellcheck="false" style="margin-top:8px"></textarea>
-    <div style="margin-top:8px"><button id="btnEnrich" class="ghost">Geburtsjahre zuordnen</button></div>
   </details>
 
   <div id="srcMsg"></div>
@@ -118,7 +155,7 @@
   <div class="stephead">
     <div class="plate p2" aria-hidden="true">20</div>
     <div><h2>Prüfen &amp; ergänzen</h2>
-      <p class="hint">Ort und Bundesland stehen nicht im Scoreboard – bitte ergänzen. Alles andere ist vorbelegt.</p></div>
+      <p class="hint">Ort und Bundesland stehen nicht im Scoreboard – bitte ergänzen. Die Vorschau ist nach Gewichtsklassen gruppiert, Fehlversuche erscheinen rot.</p></div>
   </div>
 
   <div class="row">
@@ -137,11 +174,11 @@
     <div><label for="mEquip">Equipment (Fallback)</label>
       <select id="mEquip"><option>Raw</option><option>Single-ply</option></select></div>
   </div>
-  <label for="mUrls">Quell-URLs (eine pro Zeile → Datei <span style="font-family:var(--mono)">URL</span>)</label>
-  <textarea id="mUrls" rows="2" spellcheck="false"></textarea>
+  <label for="mUrls">Quell-URLs (eine pro Zeile → Datei <span class="mono">URL</span>)</label>
+  <textarea id="mUrls" rows="2" spellcheck="false" placeholder="https://scoreboard.vportal-online.de/BVDK/event/…"></textarea>
 
   <div id="warnBox"></div>
-  <div id="prevBox" style="overflow:auto"></div>
+  <div class="tablewrap" id="prevBox"></div>
 </section>
 
 <!-- ============ STEP 3: FILES ============ -->
@@ -149,12 +186,12 @@
   <div class="stephead">
     <div class="plate p3" aria-hidden="true">15</div>
     <div><h2>Dateien</h2>
-      <p class="hint">Genau das Format der bestehenden Meets (z.&nbsp;B. <span style="font-family:var(--mono)">bvdk/2516</span>): Fehlversuche negativ, Gäste als „G“.</p></div>
+      <p class="hint">Format wie in den bestehenden Meets (z.&nbsp;B. <span class="mono">bvdk/2516</span>): Fehlversuche negativ, Gäste als „G“, DQ ohne Total.</p></div>
   </div>
   <div id="fileCards"></div>
-  <div style="display:flex;gap:10px;margin-top:16px;align-items:center;flex-wrap:wrap">
+  <div style="display:flex;gap:12px;margin-top:18px;align-items:center;flex-wrap:wrap">
     <button id="btnZip">Alle als ZIP herunterladen</button>
-    <span class="small">Für einen manuellen Merge Request: Ordner <span style="font-family:var(--mono)">meet-data/bvdk/&lt;Nr&gt;/</span> im Fork anlegen und die drei Dateien einchecken.</span>
+    <span class="small">Für einen manuellen Merge Request: Ordner <span class="mono">meet-data/bvdk/&lt;Nr&gt;/</span> im Fork anlegen und die drei Dateien einchecken.</span>
   </div>
 </section>
 
@@ -163,15 +200,31 @@
   <div class="stephead">
     <div class="plate p4" aria-hidden="true">10</div>
     <div><h2>Merge Request erstellen</h2>
-      <p class="hint">Legt automatisch an: Fork von <span style="font-family:var(--mono)">openpowerlifting/opl-data</span> (falls nötig), nächste freie Ordnernummer, Branch, Commit, MR.</p></div>
+      <p class="hint">Erledigt automatisch: Fork (falls nötig), nächste freie Ordnernummer, Duplikat-Check, Branch, Commit, MR.</p></div>
   </div>
-  <div class="row">
-    <div style="flex:2"><label for="glToken">GitLab Personal Access Token (Scope: <span style="font-family:var(--mono)">api</span>)</label>
+
+  <details class="guide">
+    <summary>GitLab-Token erstellen – Schritt für Schritt</summary>
+    <ol>
+      <li>Bei <a href="https://gitlab.com" target="_blank" rel="noopener">gitlab.com</a> anmelden (kostenloses Konto genügt).</li>
+      <li>Diese Seite öffnen: <a href="https://gitlab.com/-/user_settings/personal_access_tokens" target="_blank" rel="noopener">gitlab.com/-/user_settings/personal_access_tokens</a><br>
+          <span class="small">(oder: Avatar oben links → <i>Edit profile</i> → <i>Access tokens</i>)</span></li>
+      <li><b>„Add new token“</b> wählen.</li>
+      <li>Name vergeben, z.&nbsp;B. <code>bvdk-opl-tool</code>, und ein <b>Ablaufdatum</b> setzen (kurz halten, z.&nbsp;B. 1 Monat).</li>
+      <li>Bei <i>Scopes</i> genau ein Häkchen: <b><code>api</code></b>.</li>
+      <li><b>„Create personal access token“</b> klicken und den Token (<code>glpat-…</code>) sofort kopieren – er wird nur einmal angezeigt.</li>
+      <li>Token unten einfügen. Fertig.</li>
+    </ol>
+    <p class="note">Der Token bleibt ausschließlich im Speicher dieser Seite und wird nur an <span class="mono">gitlab.com</span> gesendet –
+    er wird nicht gespeichert. Nach getaner Arbeit kann er in den GitLab-Einstellungen jederzeit widerrufen werden (<i>Revoke</i>).</p>
+  </details>
+
+  <div class="row" style="margin-top:14px">
+    <div style="flex:2"><label for="glToken">GitLab Personal Access Token</label>
       <input type="password" id="glToken" placeholder="glpat-…" autocomplete="off"></div>
     <div><label for="glDir">Ordnernummer (leer = automatisch)</label><input type="text" id="glDir" placeholder="z. B. 2528"></div>
   </div>
-  <p class="small">Token anlegen: gitlab.com → Avatar → <i>Preferences</i> → <i>Access tokens</i> → Scope <b>api</b>. Der Token bleibt nur im Speicher dieser Seite und wird ausschließlich an <span style="font-family:var(--mono)">gitlab.com</span> gesendet.</p>
-  <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+  <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
     <button id="btnTest" class="ghost">Verbindung testen</button>
     <button id="btnMR">Merge Request erstellen</button>
   </div>
@@ -179,13 +232,13 @@
   <div id="mrResult"></div>
 </section>
 
-<p class="small" style="text-align:center">Erzeugt Beiträge für das <a href="https://gitlab.com/openpowerlifting/opl-data" target="_blank" rel="noopener">OpenPowerlifting-Projekt</a>. Daten bitte vor dem Absenden prüfen.</p>
+<footer>Erzeugt Beiträge für das <a href="https://gitlab.com/openpowerlifting/opl-data" target="_blank" rel="noopener">OpenPowerlifting-Projekt</a> · Daten vor dem Absenden prüfen</footer>
 </div>
 
 <script>
 "use strict";
 /* ================= state ================= */
-const S = { athletes: [], meet: null, groupEquip: {}, warnings: [], enriched: 0 };
+const S = { athletes: [], meet: null, groupEquip: {}, warnings: [] };
 const OPL_PROJECT = 6722790; // openpowerlifting/opl-data on gitlab.com
 const GL = "https://gitlab.com/api/v4";
 
@@ -219,15 +272,20 @@ function extractBalancedJson(s, start){
   return null;
 }
 
+function decodeEntities(s){ const t = document.createElement("textarea"); t.innerHTML = s; return t.value; }
+
 function parseScoreboard(raw){
-  S.warnings = []; S.enriched = 0;
+  S.warnings = [];
   // --- static header ---
-  let title = "";
   const h1s = [...raw.matchAll(/<h1[^>]*>([^<]+)<\/h1>/g)].map(m => decodeEntities(m[1].trim()));
-  title = h1s.find(t => t && t.toLowerCase() !== "scoreboard") || h1s[0] || "";
+  const title = h1s.find(t => t && t.toLowerCase() !== "scoreboard") || h1s[0] || "";
   const dm = [...raw.matchAll(/<div>(\d{2})\.(\d{2})\.(\d{4})<\/div>/g)];
   const isoDate = dm.length ? `${dm[0][3]}-${dm[0][2]}-${dm[0][1]}` : "";
   if (!/Abgeschlossen/.test(raw)) S.warnings.push("Event ist laut Seite nicht „Abgeschlossen“ – Ergebnisse könnten unvollständig sein.");
+
+  // source URL can be reconstructed from internal links (e.g. …/BVDK/event/1503/relativ)
+  const um = raw.match(/\/([A-Za-z]{2,12})\/event\/(\d+)/);
+  const srcUrl = um ? `https://scoreboard.vportal-online.de/${um[1]}/event/${um[2]}` : "";
 
   // --- RSC payload ---
   const p = decodeRsc(raw);
@@ -258,41 +316,12 @@ function parseScoreboard(raw){
   }
   if (!athletes.length) throw new Error("Keine Athletendaten gefunden. Team-Wertungen (teamBoard) und ältere Seitenversionen werden noch nicht unterstützt.");
 
-  // de-dup by athlete id (page can contain the same rows twice: SSR + hydration payload)
+  // de-dup (page can contain rows twice: SSR + hydration payload)
   const seen = new Set();
   S.athletes = athletes.filter(a => { const k = a.id || (a.firstName+a.lastName+a.bodyWeight); if (seen.has(k)) return false; seen.add(k); return true; });
 
-  S.meet = { title, date: isoDate };
-  return { count: S.athletes.length, title, date: isoDate };
-}
-
-function decodeEntities(s){ const t = document.createElement("textarea"); t.innerHTML = s; return t.value; }
-
-/* ============ enrichment: birth years from bvdk.de ============ */
-function enrichBirthYears(raw){
-  const hay = decodeRsc(raw) + "\n" + raw;
-  const re = /(\d{4})\/(\d{1,3}(?:[.,]\d{1,2})?)\/(\d{1,3})/g;
-  const found = [];
-  let m;
-  while ((m = re.exec(hay)) !== null){
-    const year = +m[1];
-    if (year < 1900 || year > 2020) continue;
-    const bw = parseFloat(m[2].replace(",", "."));
-    // look backwards for "Lastname, Firstname"
-    const back = hay.slice(Math.max(0, m.index - 600), m.index);
-    const nm = [...back.matchAll(/([A-ZÄÖÜ][\wÄÖÜäöüßé\-. ]{1,40}),\s([A-ZÄÖÜ][\wÄÖÜäöüßé\-. ]{1,40}?)(?=["<\\])/g)].pop();
-    found.push({ year, bw, last: nm ? nm[1].trim() : "", first: nm ? nm[2].trim() : "" });
-  }
-  let matched = 0;
-  const norm = s => s.toLowerCase().replace(/\s+/g, " ").trim();
-  for (const a of S.athletes){
-    const fn = norm(a.firstName || ""), ln = norm(a.lastName || "");
-    let hit = found.find(f => norm(f.first) === fn && norm(f.last) === ln);
-    if (!hit) hit = found.find(f => norm(f.last) === ln && Math.abs(f.bw - (a.bodyWeight||0)) < 0.05);
-    if (hit){ a._birthYear = hit.year; matched++; }
-  }
-  S.enriched = matched;
-  return { candidates: found.length, matched };
+  S.meet = { title, date: isoDate, srcUrl };
+  return { count: S.athletes.length, title, date: isoDate, srcUrl };
 }
 
 /* ================= conversion ================= */
@@ -303,20 +332,40 @@ const DIV_MAP = {
   "AK I":"Masters 1", "AK II":"Masters 2", "AK III":"Masters 3", "AK IV":"Masters 4",
   "Special Olympics":"Special Olympics"
 };
-const fmt = n => (n === null || n === undefined || n === "" ) ? "" : String(n);
+const fmt = n => (n === null || n === undefined || n === "") ? "" : String(n);
 const sanitize = s => String(s || "").replace(/"/g, "").replace(/\s*,\s*/g, " ").replace(/\s+/g, " ").trim();
+
+/* stable sort: gender (F→M) → age category (sortId) → weight class (aufsteigend, +Klasse zuletzt) → Platz */
+function sortedAthletes(){
+  const wcKey = cat => {
+    const alias = cat.alias || "";
+    if (alias.endsWith("+")) return parseFloat(alias) + 0.5;
+    const v = parseFloat(cat.to !== undefined && cat.to !== null ? cat.to : alias.replace("-", ""));
+    return isNaN(v) ? 999 : v;
+  };
+  return [...S.athletes].sort((a, b) => {
+    const ca = a.bodyWeightCategory || {}, cb = b.bodyWeightCategory || {};
+    const ga = a.gender === "female" ? 0 : 1, gb = b.gender === "female" ? 0 : 1;
+    if (ga !== gb) return ga - gb;
+    const sa = (ca.eventAgeCategory && ca.eventAgeCategory.sortId) ?? 500;
+    const sb = (cb.eventAgeCategory && cb.eventAgeCategory.sortId) ?? 500;
+    if (sa !== sb) return sa - sb;
+    const wa = wcKey(ca), wb = wcKey(cb);
+    if (wa !== wb) return wa - wb;
+    return (a.rank || 999) - (b.rank || 999);
+  });
+}
 
 function convert(){
   const warn = [...S.warnings];
   const fallbackEquip = $("mEquip").value;
-  const haveBirth = S.athletes.some(a => a._birthYear);
   const rows = [];
-  for (const a of S.athletes){
+  for (const a of sortedAthletes()){
     const cat = a.bodyWeightCategory || {};
     const ageName = cat.eventAgeCategory ? cat.eventAgeCategory.name : "";
     const guest = ageName === "außer Konkurrenz";
     let div = DIV_MAP[ageName];
-    if (!div){ div = ageName || "Open"; warn.push(`Unbekannte Altersklasse „${ageName}" – bitte Division prüfen (${a.firstName} ${a.lastName}).`); }
+    if (!div){ div = ageName || "Open"; warn.push(`Unbekannte Altersklasse „${ageName}“ – bitte Division prüfen (${a.firstName} ${a.lastName}).`); }
     const equip = S.groupEquip[cat.id] || fallbackEquip;
     const atts = {}; const discs = new Set();
     for (const at of (a.competitionAthleteAttempts || [])){
@@ -330,12 +379,11 @@ function convert(){
     if (!total && !guest) warn.push(`${a.firstName} ${a.lastName}: kein Total → als DQ eingetragen.`);
     const alias = cat.alias || "";
     const wc = alias.startsWith("-") ? alias.slice(1) : alias;
-    const row = {
+    rows.push({
       Name: sanitize(`${a.firstName||""} ${a.lastName||""}`),
       Team: sanitize(a.club ? a.club.name : ""),
       Sex: a.gender === "female" ? "F" : (a.gender === "male" ? "M" : "Mx"),
       BodyweightKg: fmt(a.bodyWeight),
-      BirthYear: a._birthYear ? String(a._birthYear) : "",
       Squat1Kg: g("squat1"), Squat2Kg: g("squat2"), Squat3Kg: g("squat3"),
       Best3SquatKg: a.squatTotal ? fmt(a.squatTotal) : "",
       Bench1Kg: g("bench1"), Bench2Kg: g("bench2"), Bench3Kg: g("bench3"),
@@ -345,16 +393,13 @@ function convert(){
       TotalKg: total ? fmt(total) : "",
       Event: ev, Equipment: equip, Division: guest ? "Guest" : div,
       WeightClassKg: wc, Place: place,
-      _grp: `${a.gender==="female"?"Frauen":"Männer"} ${ageName} ${cat.name||""}`.trim(),
+      _grp: `${a.gender==="female"?"Frauen":"Männer"} · ${ageName} · ${cat.name||""}`,
       _atts: a.competitionAthleteAttempts || []
-    };
-    rows.push(row);
+    });
   }
-  let cols = ["Name","Team","Sex","BodyweightKg","BirthYear","Squat1Kg","Squat2Kg","Squat3Kg","Best3SquatKg",
+  let cols = ["Name","Team","Sex","BodyweightKg","Squat1Kg","Squat2Kg","Squat3Kg","Best3SquatKg",
     "Bench1Kg","Bench2Kg","Bench3Kg","Best3BenchKg","Deadlift1Kg","Deadlift2Kg","Deadlift3Kg","Best3DeadliftKg",
     "TotalKg","Event","Equipment","Division","WeightClassKg","Place"];
-  if (!haveBirth) cols = cols.filter(c => c !== "BirthYear");
-  // drop lift columns entirely if the whole meet lacks that lift (e.g. bench-only meets)
   for (const [pre, key] of [["Squat","S"],["Bench","B"],["Deadlift","D"]]){
     if (!rows.some(r => r.Event.includes(key)))
       cols = cols.filter(c => !c.startsWith(pre) && c !== `Best3${pre}Kg`);
@@ -375,15 +420,12 @@ function buildFiles(){
 /* ================= UI rendering ================= */
 function msg(el, kind, html){ $(el).innerHTML = `<div class="msg ${kind}">${html}</div>`; }
 
-function afterParse(info, sourceUrl){
+function afterParse(info){
   msg("srcMsg", "ok", `<b>${info.count} Athlet:innen</b> geladen – „${esc(info.title)}“ (${info.date || "Datum unbekannt"}).`);
   $("stepReview").style.display = $("stepFiles").style.display = $("stepMR").style.display = "block";
   $("mName").value = (info.title || "").replace(/\s+(Raw|Classic|Equipped)$/i, "");
   $("mDate").value = info.date || "";
-  const urls = [];
-  if (sourceUrl) urls.push(sourceUrl);
-  else if ($("srcUrl").value.trim()) urls.push($("srcUrl").value.trim());
-  $("mUrls").value = urls.join("\n");
+  $("mUrls").value = info.srcUrl || "";
   refresh();
   $("stepReview").scrollIntoView({ behavior: "smooth" });
 }
@@ -391,12 +433,10 @@ function afterParse(info, sourceUrl){
 function refresh(){
   if (!S.athletes.length) return;
   const f = buildFiles();
-  // warnings
   $("warnBox").innerHTML = f.warnings.length
     ? `<div class="msg warn"><b>Hinweise:</b><br>${f.warnings.map(esc).join("<br>")}</div>` : "";
-  // preview table grouped
+
   let html = `<table class="prev"><thead><tr><th>Pl.</th><th>Name</th><th>Verein</th><th>KG</th>` +
-    (f.cols.includes("BirthYear") ? "<th>Geb.</th>" : "") +
     `<th>KB 1–3</th><th>BD 1–3</th><th>KH 1–3</th><th>Total</th><th>Div.</th><th>GK</th></tr></thead><tbody>`;
   let lastGrp = null;
   const chip = at => {
@@ -405,10 +445,9 @@ function refresh(){
     return `<span class="chip ${cls}">${fmt(Math.abs(at.weight))}</span>`;
   };
   for (const r of f.rows){
-    if (r._grp !== lastGrp){ html += `<tr class="grp"><td colspan="12">${esc(r._grp)}</td></tr>`; lastGrp = r._grp; }
+    if (r._grp !== lastGrp){ html += `<tr class="grp"><td colspan="10">${esc(r._grp)}</td></tr>`; lastGrp = r._grp; }
     const A = {}; for (const at of r._atts) A[at.id] = at;
     html += `<tr><td>${esc(r.Place)}</td><td>${esc(r.Name)}</td><td>${esc(r.Team)}</td><td>${r.BodyweightKg}</td>` +
-      (f.cols.includes("BirthYear") ? `<td>${r.BirthYear}</td>` : "") +
       `<td>${chip(A.squat1)}${chip(A.squat2)}${chip(A.squat3)}</td>` +
       `<td>${chip(A.bench1)}${chip(A.bench2)}${chip(A.bench3)}</td>` +
       `<td>${chip(A.deadlift1)}${chip(A.deadlift2)}${chip(A.deadlift3)}</td>` +
@@ -416,7 +455,7 @@ function refresh(){
   }
   html += "</tbody></table>";
   $("prevBox").innerHTML = html;
-  // file cards
+
   const card = (name, content) => `<div class="filecard"><div class="fh"><b>${name}</b><span class="spacer"></span>
       <button class="ghost" onclick="copyText(this.dataset.f)" data-f="${name}">Kopieren</button>
       <button class="ghost" onclick="dlFile(this.dataset.f)" data-f="${name}">Download</button></div>
@@ -434,8 +473,8 @@ window.dlFile = name => {
 };
 
 /* ================= inputs ================= */
-function handleRaw(raw, sourceUrl){
-  try { const info = parseScoreboard(raw); afterParse(info, sourceUrl); }
+function handleRaw(raw){
+  try { const info = parseScoreboard(raw); afterParse(info); }
   catch(e){ msg("srcMsg", "err", esc(e.message)); }
 }
 $("btnParsePaste").onclick = () => handleRaw($("srcPaste").value);
@@ -447,46 +486,11 @@ drop.addEventListener("dragleave", () => drop.classList.remove("over"));
 drop.addEventListener("drop", e => { e.preventDefault(); drop.classList.remove("over");
   const f = e.dataTransfer.files[0]; if (f) f.text().then(t => handleRaw(t)); });
 
-async function fetchSource(viaProxy){
-  const url = $("srcUrl").value.trim();
-  if (!/^https:\/\//.test(url)) return msg("srcMsg", "err", "Bitte eine vollständige https-URL angeben.");
-  msg("srcMsg", "warn", "Lade …");
-  const target = viaProxy ? "https://api.allorigins.win/raw?url=" + encodeURIComponent(url) : url;
-  try {
-    const r = await fetch(target);
-    if (!r.ok) throw new Error("HTTP " + r.status);
-    handleRaw(await r.text(), url);
-  } catch(e){
-    msg("srcMsg", "err", `Abruf fehlgeschlagen (${esc(e.message)}). ` +
-      (viaProxy ? "Bitte Seite per Strg+S speichern und die Datei hier ablegen."
-                : "Vermutlich CORS – „Über Proxy abrufen“ versuchen oder Seite per Strg+S speichern und ablegen."));
-  }
-}
-$("btnFetch").onclick = () => fetchSource(false);
-$("btnFetchProxy").onclick = () => fetchSource(true);
-
-/* enrichment inputs */
-$("btnPick2").onclick = () => $("filePick2").click();
-$("filePick2").onchange = e => e.target.files[0] && e.target.files[0].text().then(t => { $("srcPaste2").value = t; });
-const drop2 = $("drop2");
-drop2.addEventListener("dragover", e => { e.preventDefault(); drop2.classList.add("over"); });
-drop2.addEventListener("dragleave", () => drop2.classList.remove("over"));
-drop2.addEventListener("drop", e => { e.preventDefault(); drop2.classList.remove("over");
-  const f = e.dataTransfer.files[0]; if (f) f.text().then(t => { $("srcPaste2").value = t; }); });
-$("btnEnrich").onclick = () => {
-  if (!S.athletes.length) return msg("srcMsg", "err", "Bitte zuerst die Scoreboard-Seite laden.");
-  const raw = $("srcPaste2").value;
-  if (!raw.trim()) return msg("srcMsg", "err", "Kein bvdk.de-Quelltext vorhanden.");
-  const r = enrichBirthYears(raw);
-  msg("srcMsg", r.matched ? "ok" : "warn", `Geburtsjahre: ${r.matched} von ${S.athletes.length} Athlet:innen zugeordnet (${r.candidates} Kandidaten gefunden).`);
-  refresh();
-};
-
 /* ================= ZIP (store-only) ================= */
 const CRC_T = (() => { const t = new Uint32Array(256);
   for (let n = 0; n < 256; n++){ let c = n; for (let k = 0; k < 8; k++) c = (c & 1) ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
 const crc32 = u8 => { let c = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) c = CRC_T[(c ^ u8[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
-function makeZip(files){ // files: [{name, text}]
+function makeZip(files){
   const enc = new TextEncoder(); const parts = []; const central = []; let offset = 0;
   const now = new Date();
   const dosTime = ((now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1)) & 0xFFFF;
@@ -621,8 +625,7 @@ $("btnMR").onclick = async () => {
     const desc = `Adds \`bvdk/${dir}\`: **${f.meetName}** (${$("mDate").value}).\n\n` +
       `Source: ${f.urlFile.trim().split("\n").join(", ")}\n\n` +
       `Parsed from the vportal scoreboard page (SSR payload). Failed attempts are recorded as negative values; ` +
-      `lifters "außer Konkurrenz" are marked as guests (Place G).` +
-      (S.enriched ? `\nBirth years merged from the bvdk.de results page (${S.enriched}/${S.athletes.length}).` : "");
+      `lifters "außer Konkurrenz" are marked as guests (Place G).`;
     const { json: mr } = await gl(`/projects/${fork.id}/merge_requests`, { method: "POST", body: JSON.stringify({
       source_branch: branch, target_branch: defBranch, target_project_id: OPL_PROJECT,
       title, description: desc, remove_source_branch: true, allow_collaboration: true })});
