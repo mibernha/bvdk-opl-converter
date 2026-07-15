@@ -10,7 +10,6 @@
   :root{
     --bg:#0f1216; --panel:#171b21; --panel2:#1d222a; --ink:#e9ecf1; --muted:#9aa3af; --line:#2a313b;
     --accent:#5b9bd5; --accent-dim:#3d6f9e;
-    --plate-red:#b8253c; --plate-blue:#2e6db4; --plate-yellow:#c99a1a; --plate-green:#2c8a5b;
     --ok-bg:rgba(46,164,107,.16); --ok-ink:#5ecf97; --bad-bg:rgba(224,85,99,.14); --bad-ink:#f08795;
     --warn-bg:rgba(201,154,26,.14); --warn-ink:#e5bd57;
     --mono:'JetBrains Mono',ui-monospace,monospace;
@@ -27,11 +26,8 @@
   header.top .sub{color:var(--muted);margin-top:8px;max-width:640px}
 
   section.step{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:24px 26px;margin-bottom:24px}
-  .stephead{display:flex;align-items:center;gap:16px;margin-bottom:16px}
-  .plate{width:46px;height:46px;border-radius:50%;flex:0 0 46px;display:flex;align-items:center;justify-content:center;
-         color:#fff;font:700 19px 'Barlow Condensed';
-         box-shadow:inset 0 0 0 4px rgba(255,255,255,.22), inset 0 0 0 13px rgba(0,0,0,.28), 0 2px 8px rgba(0,0,0,.4)}
-  .p1{background:var(--plate-red)} .p2{background:var(--plate-blue)} .p3{background:var(--plate-yellow)} .p4{background:var(--plate-green)}
+  .stephead{margin-bottom:16px}
+  .steplabel{font:600 12px 'Barlow';letter-spacing:.24em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
   .stephead h2{font:600 23px 'Barlow Condensed';text-transform:uppercase;letter-spacing:.5px;margin:0}
   .stephead .hint{color:var(--muted);font-size:13.5px;margin:3px 0 0}
 
@@ -123,8 +119,7 @@
 <!-- ============ STEP 1: SOURCE ============ -->
 <section class="step">
   <div class="stephead">
-    <div class="plate p1" aria-hidden="true">25</div>
-    <div><h2>Quelle laden</h2>
+    <div><div class="steplabel">First Step</div><h2>Quelle laden</h2>
       <p class="hint">Die Ergebnisdaten stecken vollständig im HTML der Scoreboard-Eventseite – inklusive gültig/ungültig je Versuch.</p></div>
   </div>
 
@@ -153,8 +148,7 @@
 <!-- ============ STEP 2: REVIEW ============ -->
 <section class="step" id="stepReview" style="display:none">
   <div class="stephead">
-    <div class="plate p2" aria-hidden="true">20</div>
-    <div><h2>Prüfen &amp; ergänzen</h2>
+    <div><div class="steplabel">Second Step</div><h2>Prüfen &amp; ergänzen</h2>
       <p class="hint">Ort und Bundesland stehen nicht im Scoreboard – bitte ergänzen. Die Vorschau ist nach Gewichtsklassen gruppiert, Fehlversuche erscheinen rot.</p></div>
   </div>
 
@@ -184,8 +178,7 @@
 <!-- ============ STEP 3: FILES ============ -->
 <section class="step" id="stepFiles" style="display:none">
   <div class="stephead">
-    <div class="plate p3" aria-hidden="true">15</div>
-    <div><h2>Dateien</h2>
+    <div><div class="steplabel">Third Step</div><h2>Dateien</h2>
       <p class="hint">Format wie in den bestehenden Meets (z.&nbsp;B. <span class="mono">bvdk/2516</span>): Fehlversuche negativ, Gäste als „G“, DQ ohne Total.</p></div>
   </div>
   <div id="fileCards"></div>
@@ -198,8 +191,7 @@
 <!-- ============ STEP 4: MERGE REQUEST ============ -->
 <section class="step" id="stepMR" style="display:none">
   <div class="stephead">
-    <div class="plate p4" aria-hidden="true">10</div>
-    <div><h2>Merge Request erstellen</h2>
+    <div><div class="steplabel">Fourth Step</div><h2>Merge Request erstellen</h2>
       <p class="hint">Erledigt automatisch: Fork (falls nötig), nächste freie Ordnernummer, Duplikat-Check, Branch, Commit, MR.</p></div>
   </div>
 
@@ -384,11 +376,12 @@ function convert(){
       Team: sanitize(a.club ? a.club.name : ""),
       Sex: a.gender === "female" ? "F" : (a.gender === "male" ? "M" : "Mx"),
       BodyweightKg: fmt(a.bodyWeight),
-      Squat1Kg: g("squat1"), Squat2Kg: g("squat2"), Squat3Kg: g("squat3"),
+      BirthDate: "", BirthYear: "",
+      Squat1Kg: g("squat1"), Squat2Kg: g("squat2"), Squat3Kg: g("squat3"), Squat4Kg: g("squat4"),
       Best3SquatKg: a.squatTotal ? fmt(a.squatTotal) : "",
-      Bench1Kg: g("bench1"), Bench2Kg: g("bench2"), Bench3Kg: g("bench3"),
+      Bench1Kg: g("bench1"), Bench2Kg: g("bench2"), Bench3Kg: g("bench3"), Bench4Kg: g("bench4"),
       Best3BenchKg: a.benchPressTotal ? fmt(a.benchPressTotal) : "",
-      Deadlift1Kg: g("deadlift1"), Deadlift2Kg: g("deadlift2"), Deadlift3Kg: g("deadlift3"),
+      Deadlift1Kg: g("deadlift1"), Deadlift2Kg: g("deadlift2"), Deadlift3Kg: g("deadlift3"), Deadlift4Kg: g("deadlift4"),
       Best3DeadliftKg: a.deadliftTotal ? fmt(a.deadliftTotal) : "",
       TotalKg: total ? fmt(total) : "",
       Event: ev, Equipment: equip, Division: guest ? "Guest" : div,
@@ -397,12 +390,17 @@ function convert(){
       _atts: a.competitionAthleteAttempts || []
     });
   }
-  let cols = ["Name","Team","Sex","BodyweightKg","Squat1Kg","Squat2Kg","Squat3Kg","Best3SquatKg",
-    "Bench1Kg","Bench2Kg","Bench3Kg","Best3BenchKg","Deadlift1Kg","Deadlift2Kg","Deadlift3Kg","Best3DeadliftKg",
+  // full standard column set of recent bvdk meets — columns stay present even when empty
+  const cols = ["Name","Team","Sex","BodyweightKg","BirthDate","BirthYear",
+    "Squat1Kg","Squat2Kg","Squat3Kg","Best3SquatKg",
+    "Bench1Kg","Bench2Kg","Bench3Kg","Best3BenchKg",
+    "Deadlift1Kg","Deadlift2Kg","Deadlift3Kg","Best3DeadliftKg",
     "TotalKg","Event","Equipment","Division","WeightClassKg","Place"];
-  for (const [pre, key] of [["Squat","S"],["Bench","B"],["Deadlift","D"]]){
-    if (!rows.some(r => r.Event.includes(key)))
-      cols = cols.filter(c => !c.startsWith(pre) && c !== `Best3${pre}Kg`);
+  // 4th (record) attempts are not part of the standard set; add the column
+  // after the matching Best3 column only if the meet actually had any
+  for (const pre of ["Squat","Bench","Deadlift"]){
+    if (rows.some(r => r[`${pre}4Kg`]))
+      cols.splice(cols.indexOf(`Best3${pre}Kg`) + 1, 0, `${pre}4Kg`);
   }
   return { rows, cols, warnings: [...new Set(warn)] };
 }
@@ -448,9 +446,9 @@ function refresh(){
     if (r._grp !== lastGrp){ html += `<tr class="grp"><td colspan="10">${esc(r._grp)}</td></tr>`; lastGrp = r._grp; }
     const A = {}; for (const at of r._atts) A[at.id] = at;
     html += `<tr><td>${esc(r.Place)}</td><td>${esc(r.Name)}</td><td>${esc(r.Team)}</td><td>${r.BodyweightKg}</td>` +
-      `<td>${chip(A.squat1)}${chip(A.squat2)}${chip(A.squat3)}</td>` +
-      `<td>${chip(A.bench1)}${chip(A.bench2)}${chip(A.bench3)}</td>` +
-      `<td>${chip(A.deadlift1)}${chip(A.deadlift2)}${chip(A.deadlift3)}</td>` +
+      `<td>${chip(A.squat1)}${chip(A.squat2)}${chip(A.squat3)}${A.squat4 ? chip(A.squat4) : ""}</td>` +
+      `<td>${chip(A.bench1)}${chip(A.bench2)}${chip(A.bench3)}${A.bench4 ? chip(A.bench4) : ""}</td>` +
+      `<td>${chip(A.deadlift1)}${chip(A.deadlift2)}${chip(A.deadlift3)}${A.deadlift4 ? chip(A.deadlift4) : ""}</td>` +
       `<td><b>${r.TotalKg}</b></td><td>${esc(r.Division)}</td><td>${r.WeightClassKg}</td></tr>`;
   }
   html += "</tbody></table>";
