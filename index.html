@@ -335,7 +335,38 @@ const DIV_MAP = {
   "Special Olympics":"Special Olympics"
 };
 const fmt = n => (n === null || n === undefined || n === "") ? "" : String(n);
-const sanitize = s => String(s || "").replace(/"/g, "").replace(/\s*,\s*/g, " ").replace(/\s+/g, " ").trim();
+
+/* --- Zeichen-Normalisierung -------------------------------------------------
+   Der OPL-Checker erlaubt in `Name` nur Buchstaben sowie ` ` ' . -
+   Die Username-Erzeugung kennt zusätzlich nur eine feste Liste an Sonder-
+   buchstaben. Scoreboard-Daten enthalten aber gelegentlich typografische
+   Zeichen (Geviertstrich, typografischer Apostroph, geschütztes Leerzeichen),
+   die die Pipeline scheitern lassen – die werden hier ersetzt.            */
+const RE_INVIS  = /[\u200B\u200C\u200D\uFEFF\u00AD]/g;
+const RE_SPACE  = /[\u00A0\u2007\u2009\u200A\u202F\u3000]/g;
+const RE_DASH   = /[\u2010\u2011\u2012\u2013\u2014\u2015\u2043\u2212\uFE58\uFE63\uFF0D]/g;
+const RE_APOS   = /[\u2018\u2019\u02BC\u02B9\u2032\u00B4\u0060\u2035]/g;
+const RE_QUOTE  = /["“”„»«]/g;
+
+const normText = s => String(s || "").normalize("NFC")
+  .replace(RE_INVIS, "").replace(RE_SPACE, " ")
+  .replace(RE_DASH, "-").replace(RE_APOS, "'").replace(RE_QUOTE, "")
+  .replace(/\s*,\s*/g, " ").replace(/\s+/g, " ").trim();
+
+/* Team darf Ziffern und ein abschließendes „e.V.“ behalten */
+const sanitize = s => normText(s);
+/* Name zusätzlich: kein Punkt am Ende (Checker-Regel) */
+const cleanName = s => normText(s).replace(/\.+$/, "").trim();
+
+const NAME_ALLOWED = c => /\p{L}/u.test(c) || c === " " || c === "'" || c === "." || c === "-";
+const UNAME_KNOWN = new Set([
+  ..."abcdefghijklmnopqrstuvwxyz0123456789",
+  ..."áäåąãàâāắấầặạăảậằẩæćçčĉċđðďéêëèěęēếễểềệėəğģîíïìїīĩịıįķľĺļŀłñńňņøôöóőõòỗọơồớốōŏờộợřßšśșştțťţþüůúùūűưứũữựừửýỳỹỷұžżź",
+  "\u0307"
+]);
+const illegalChars = n => [...new Set([...n].filter(c => !NAME_ALLOWED(c)))];
+const oddForUsername = n => [...new Set([...n.toLowerCase()]
+  .filter(c => /\p{L}/u.test(c) && !UNAME_KNOWN.has(c) && c.charCodeAt(0) > 127))];
 
 /* stable sort: gender (F→M) → age category (sortId) → weight class (aufsteigend, +Klasse zuletzt) → Platz */
 function sortedAthletes(){
@@ -360,6 +391,7 @@ function sortedAthletes(){
 
 function convert(){
   const warn = [...S.warnings];
+  const fixes = [];
   const fallbackEquip = $("mEquip").value;
   const rows = [];
   for (const a of sortedAthletes()){
@@ -381,8 +413,15 @@ function convert(){
     if (!total && !guest) warn.push(`${a.firstName} ${a.lastName}: kein Total → als DQ eingetragen.`);
     const alias = cat.alias || "";
     const wc = alias.startsWith("-") ? alias.slice(1) : alias;
+    const rawName = `${a.firstName || ""} ${a.lastName || ""}`.replace(/\s+/g, " ").trim();
+    const name = cleanName(rawName);
+    if (name !== rawName) fixes.push(`„${rawName}“ → „${name}“`);
+    const bad = illegalChars(name);
+    if (bad.length) warn.push(`${name}: unzulässige Zeichen ${bad.map(c => "„"+c+"“").join(" ")} – der OPL-Checker lehnt das ab, bitte manuell korrigieren.`);
+    const odd = oddForUsername(name);
+    if (odd.length) warn.push(`${name}: ungewöhnliche Buchstaben ${odd.map(c => "„"+c+"“").join(" ")} – kann die Username-Erzeugung stören, bitte prüfen.`);
     rows.push({
-      Name: sanitize(`${a.firstName||""} ${a.lastName||""}`),
+      Name: name,
       Team: sanitize(a.club ? a.club.name : ""),
       Sex: a.gender === "female" ? "F" : (a.gender === "male" ? "M" : "Mx"),
       BodyweightKg: fmt(a.bodyWeight),
@@ -412,17 +451,17 @@ function convert(){
     if (rows.some(r => r[`${pre}4Kg`]))
       cols.splice(cols.indexOf(`Best3${pre}Kg`) + 1, 0, `${pre}4Kg`);
   }
-  return { rows, cols, warnings: [...new Set(warn)] };
+  return { rows, cols, warnings: [...new Set(warn)], fixes: [...new Set(fixes)] };
 }
 
 function buildFiles(){
-  const { rows, cols, warnings } = convert();
+  const { rows, cols, warnings, fixes } = convert();
   const meetName = sanitize($("mName").value);
   const meetCsv = "Federation,Date,MeetCountry,MeetState,MeetTown,MeetName\n" +
     ["BVDK", $("mDate").value, "Germany", $("mState").value, sanitize($("mTown").value), meetName].join(",") + "\n";
   const entriesCsv = cols.join(",") + "\n" + rows.map(r => cols.map(c => r[c]).join(",")).join("\n") + "\n";
   const urlFile = $("mUrls").value.split(/\n+/).map(s => s.trim()).filter(Boolean).join("\n") + "\n";
-  return { meetCsv, entriesCsv, urlFile, rows, cols, warnings, meetName };
+  return { meetCsv, entriesCsv, urlFile, rows, cols, warnings, fixes, meetName };
 }
 
 /* ================= UI rendering ================= */
@@ -441,8 +480,9 @@ function afterParse(info){
 function refresh(){
   if (!S.athletes.length) return;
   const f = buildFiles();
-  $("warnBox").innerHTML = f.warnings.length
-    ? `<div class="msg warn"><b>Hinweise:</b><br>${f.warnings.map(esc).join("<br>")}</div>` : "";
+  $("warnBox").innerHTML =
+    (f.fixes.length ? `<div class="msg ok"><b>Automatisch bereinigt (Sonderzeichen):</b><br>${f.fixes.map(esc).join("<br>")}</div>` : "") +
+    (f.warnings.length ? `<div class="msg warn"><b>Hinweise:</b><br>${f.warnings.map(esc).join("<br>")}</div>` : "");
 
   let html = `<table class="prev"><thead><tr><th>Pl.</th><th>Name</th><th>Verein</th><th>KG</th>` +
     `<th>KB 1–3</th><th>BD 1–3</th><th>KH 1–3</th><th>Total</th><th>Div.</th><th>GK</th></tr></thead><tbody>`;
