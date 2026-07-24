@@ -123,12 +123,22 @@
       <p class="hint">Die Ergebnisdaten stecken vollständig im HTML der Scoreboard-Eventseite – inklusive gültig/ungültig je Versuch.</p></div>
   </div>
 
-  <div class="guide" style="margin-top:0">
+  <label for="srcUrl">Event-URL</label>
+  <div class="row">
+    <div style="flex:3"><input type="text" id="srcUrl" placeholder="https://scoreboard.vportal-online.de/BVDK/event/1503"></div>
+    <div style="flex:0 0 auto"><button id="btnFetch">Abrufen</button></div>
+  </div>
+  <p class="small" style="margin:8px 0 0">Der Scoreboard-Server erlaubt keinen direkten Zugriff aus dem Browser (CORS).
+  Das Tool probiert daher zuerst den Direktabruf und danach mehrere öffentliche Weiterleitungsdienste.
+  Da diese Dienste von Dritten betrieben werden, läuft die (öffentliche) Ergebnisseite über deren Server –
+  wenn das nicht erwünscht ist oder alle Dienste ausfallen, den Weg über die gespeicherte Datei nutzen.</p>
+
+  <div class="guide" style="margin-top:16px">
     <div style="padding:12px 16px;font-size:14px;color:#c7cdd6">
-      <b style="color:var(--ink)">So geht’s:</b> Eventseite im Browser öffnen (z.&nbsp;B.
-      <span class="mono">…/BVDK/event/1503</span>) → <b style="color:var(--ink)">Strg&nbsp;+&nbsp;S</b> →
-      Format <i>„Webseite, nur HTML“</i> → gespeicherte Datei unten ablegen.
-      Alternativ <b style="color:var(--ink)">Strg&nbsp;+&nbsp;U</b> (Quelltext anzeigen), alles kopieren und einfügen.
+      <b style="color:var(--ink)">Immer zuverlässig:</b> Eventseite im Browser öffnen →
+      <b style="color:var(--ink)">Strg&nbsp;+&nbsp;S</b> → Format <i>„Webseite, nur HTML“</i> →
+      gespeicherte Datei unten ablegen. Alternativ <b style="color:var(--ink)">Strg&nbsp;+&nbsp;U</b>
+      (Quelltext anzeigen), alles kopieren und einfügen.
     </div>
   </div>
 
@@ -471,10 +481,54 @@ window.dlFile = name => {
 };
 
 /* ================= inputs ================= */
-function handleRaw(raw){
-  try { const info = parseScoreboard(raw); afterParse(info); }
+function handleRaw(raw, urlOverride){
+  try { const info = parseScoreboard(raw); if (urlOverride) info.srcUrl = urlOverride; afterParse(info); }
   catch(e){ msg("srcMsg", "err", esc(e.message)); }
 }
+
+/* --- URL fetch: direct first, then public CORS relays --- */
+const RELAYS = [
+  { name: "direkt",        url: u => u },
+  { name: "corsproxy.io",  url: u => "https://corsproxy.io/?url=" + encodeURIComponent(u) },
+  { name: "allorigins",    url: u => "https://api.allorigins.win/raw?url=" + encodeURIComponent(u) },
+  { name: "codetabs",      url: u => "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(u) },
+  { name: "isomorphic-git",url: u => "https://cors.isomorphic-git.org/" + u },
+];
+/* a relay response counts as usable only if it really parses */
+function tryParse(html){ try { return parseScoreboard(html); } catch(e){ return null; } }
+
+async function fetchSource(){
+  let url = $("srcUrl").value.trim();
+  if (!/^https?:\/\/\S+\/event\/\d+/.test(url))
+    return msg("srcMsg", "err", "Bitte eine vollständige Event-URL angeben, z. B. https://scoreboard.vportal-online.de/BVDK/event/1503");
+  url = url.replace(/\/(relativ|team|teamBoard)\/?$/i, "").replace(/[?#].*$/, "");
+  $("btnFetch").disabled = true;
+  const tried = [];
+  try {
+    for (const r of RELAYS){
+      msg("srcMsg", "warn", `Lade über <b>${esc(r.name)}</b> …`);
+      try {
+        const ctl = new AbortController();
+        const to = setTimeout(() => ctl.abort(), 20000);
+        const res = await fetch(r.url(url), { signal: ctl.signal, redirect: "follow" });
+        clearTimeout(to);
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const html = await res.text();
+        const info = tryParse(html);
+        if (!info) throw new Error("Antwort enthält keine Ergebnisdaten");
+        info.srcUrl = url;
+        afterParse(info);
+        $("srcMsg").insertAdjacentHTML("beforeend",
+          `<div class="msg ok" style="margin-top:8px">Abgerufen über <b>${esc(r.name)}</b>.</div>`);
+        return;
+      } catch(e){ tried.push(`${r.name}: ${e.message === "The user aborted a request." ? "Zeitüberschreitung" : e.message}`); }
+    }
+    msg("srcMsg", "err", "Abruf über alle Wege fehlgeschlagen – bitte die Seite per <b>Strg&nbsp;+&nbsp;S</b> speichern und die Datei unten ablegen.<br>" +
+      `<span class="small">${tried.map(esc).join(" · ")}</span>`);
+  } finally { $("btnFetch").disabled = false; }
+}
+$("btnFetch").onclick = fetchSource;
+$("srcUrl").addEventListener("keydown", e => { if (e.key === "Enter") fetchSource(); });
 $("btnParsePaste").onclick = () => handleRaw($("srcPaste").value);
 $("btnPick").onclick = () => $("filePick").click();
 $("filePick").onchange = e => e.target.files[0] && e.target.files[0].text().then(t => handleRaw(t));
@@ -604,21 +658,41 @@ $("btnMR").onclick = async () => {
     if (!dir){ dir = await nextDirNumber(defBranch); $("glDir").value = dir; }
     log(`Ordner: meet-data/bvdk/${dir}`, "lok");
 
-    // branch + commit + MR
-    const branch = `bvdk-${dir}`;
+    // freshness check: is the fork behind upstream?
     const forkDef = fork.default_branch || defBranch;
-    await gl(`/projects/${fork.id}/repository/branches?branch=${encodeURIComponent(branch)}&ref=${encodeURIComponent(forkDef)}`, { method: "POST" });
-    log(`Branch ${branch} angelegt (von ${forkDef}).`, "lok");
+    let upHead = "", forkHead = "";
+    try {
+      const { json: ub } = await gl(`/projects/${OPL_PROJECT}/repository/branches/${encodeURIComponent(defBranch)}`);
+      const { json: fb } = await gl(`/projects/${fork.id}/repository/branches/${encodeURIComponent(forkDef)}`);
+      upHead = ub.commit.id; forkHead = fb.commit.id;
+      if (upHead === forkHead) log(`Fork ist aktuell (${upHead.slice(0,8)}).`, "lok");
+      else log(`Fork ist nicht auf Stand (Fork ${forkHead.slice(0,8)} ≠ upstream ${upHead.slice(0,8)}).`, "lwarn");
+    } catch(e){ log("Stand des Forks nicht ermittelbar: " + e.message, "lwarn"); }
 
+    // branch + commit, based on the CURRENT upstream tip (start_project = upstream)
+    const branch = `bvdk-${dir}`;
     const title = `bvdk/${dir}: ${f.meetName}`;
-    await gl(`/projects/${fork.id}/repository/commits`, { method: "POST", body: JSON.stringify({
-      branch, commit_message: title,
-      actions: [
-        { action: "create", file_path: `meet-data/bvdk/${dir}/meet.csv`, content: f.meetCsv },
-        { action: "create", file_path: `meet-data/bvdk/${dir}/entries.csv`, content: f.entriesCsv },
-        { action: "create", file_path: `meet-data/bvdk/${dir}/URL`, content: f.urlFile },
-      ]})});
-    log("Dateien committet.", "lok");
+    const actions = [
+      { action: "create", file_path: `meet-data/bvdk/${dir}/meet.csv`, content: f.meetCsv },
+      { action: "create", file_path: `meet-data/bvdk/${dir}/entries.csv`, content: f.entriesCsv },
+      { action: "create", file_path: `meet-data/bvdk/${dir}/URL`, content: f.urlFile },
+    ];
+    let based = "";
+    try {
+      await gl(`/projects/${fork.id}/repository/commits`, { method: "POST", body: JSON.stringify({
+        branch, start_branch: defBranch, start_project: OPL_PROJECT, commit_message: title, actions })});
+      based = `upstream/${defBranch}`;
+      log(`Branch ${branch} auf dem aktuellen Stand von upstream/${defBranch} erstellt und committet.`, "lok");
+    } catch(e){
+      log("Direktes Aufsetzen auf upstream fehlgeschlagen (" + e.message + ") – weiche auf den Fork-Stand aus.", "lwarn");
+      await gl(`/projects/${fork.id}/repository/branches?branch=${encodeURIComponent(branch)}&ref=${encodeURIComponent(forkDef)}`, { method: "POST" });
+      await gl(`/projects/${fork.id}/repository/commits`, { method: "POST", body: JSON.stringify({
+        branch, commit_message: title, actions })});
+      based = `fork/${forkDef}`;
+      log(`Branch ${branch} von ${forkDef} erstellt und committet.`, "lok");
+      if (upHead && forkHead && upHead !== forkHead)
+        log("Hinweis: Der Branch basiert auf einem älteren Stand. GitLab kann den MR trotzdem mergen, solange es keine Konflikte gibt.", "lwarn");
+    }
 
     const desc = `Adds \`bvdk/${dir}\`: **${f.meetName}** (${$("mDate").value}).\n\n` +
       `Source: ${f.urlFile.trim().split("\n").join(", ")}\n\n` +
