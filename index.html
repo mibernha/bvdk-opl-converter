@@ -595,19 +595,67 @@ $("btnTest").onclick = async () => {
   } catch(e){ log(e.message, "lerr"); }
 };
 
-async function nextDirNumber(defaultBranch){
+/* Höchste vorhandene Ordnernummer YYNN für das Meet-Jahr ermitteln.
+   Drei Quellen, weil keine allein vollständig ist:
+     1. upstream  – alles bereits Gemergte
+     2. Fork      – falls der Fork eigene Stände enthält
+     3. Fork-Branches bvdk-YYNN – eigene, noch offene MRs           */
+async function scanTree(projectId, ref, yy, label){
+  let page = 1, maxN = 0, seen = 0;
+  const rx = new RegExp(`^${yy}(\\d\\d)$`);
+  for(;;){
+    let json, headers;
+    try { ({ json, headers } = await gl(
+      `/projects/${projectId}/repository/tree?path=meet-data/bvdk&per_page=100&page=${page}&ref=${encodeURIComponent(ref)}`)); }
+    catch(e){ log(`${label}: nicht lesbar (${e.message})`, "lwarn"); return 0; }
+    for (const e of json){
+      if (e.type !== "tree") continue;
+      seen++;
+      const m = rx.exec(e.name);
+      if (m) maxN = Math.max(maxN, +m[1]);
+    }
+    const np = headers.get("x-next-page");
+    if (!np) break;
+    page = +np;
+  }
+  log(`${label}: ${seen} Ordner, höchste ${yy}xx-Nummer = ${maxN ? yy + String(maxN).padStart(2,"0") : "keine"}`);
+  return maxN;
+}
+
+async function scanForkBranches(forkId, yy){
+  let page = 1, maxN = 0; const hits = [];
+  const rx = new RegExp(`^bvdk-${yy}(\\d\\d)$`);
+  for(;;){
+    let json, headers;
+    try { ({ json, headers } = await gl(
+      `/projects/${forkId}/repository/branches?search=bvdk-&per_page=100&page=${page}`)); }
+    catch(e){ return 0; }
+    for (const b of json){
+      const m = rx.exec(b.name);
+      if (m){ maxN = Math.max(maxN, +m[1]); hits.push(b.name); }
+    }
+    const np = headers.get("x-next-page");
+    if (!np) break;
+    page = +np;
+  }
+  if (hits.length) log(`Offene eigene Branches: ${hits.join(", ")}`, "lwarn");
+  return maxN;
+}
+
+async function nextDirNumber(defBranch, fork){
   const yy = ($("mDate").value || "").slice(2, 4);
   if (!/^\d\d$/.test(yy)) throw new Error("Datum fehlt – Ordnernummer kann nicht bestimmt werden.");
-  let page = 1, maxN = 0, all = 0;
-  for(;;){
-    const { json, headers } = await gl(`/projects/${OPL_PROJECT}/repository/tree?path=meet-data/bvdk&per_page=100&page=${page}&ref=${encodeURIComponent(defaultBranch)}`);
-    for (const e of json){ all++;
-      if (e.type === "tree" && new RegExp(`^${yy}\\d\\d$`).test(e.name)) maxN = Math.max(maxN, +e.name.slice(2)); }
-    const np = headers.get("x-next-page");
-    if (!np) break; page = +np;
-  }
-  log(`meet-data/bvdk enthält ${all} Einträge; höchste ${yy}xx-Nummer: ${maxN ? yy + String(maxN).padStart(2,"0") : "keine"}`);
-  return yy + String(maxN + 1).padStart(2, "0");
+  const forkDef = fork.default_branch || defBranch;
+  const [up, mine, branches] = [
+    await scanTree(OPL_PROJECT, defBranch, yy, "upstream"),
+    await scanTree(fork.id, forkDef, yy, "Fork"),
+    await scanForkBranches(fork.id, yy),
+  ];
+  const maxN = Math.max(up, mine, branches);
+  if (maxN >= 99) throw new Error(`Für ${yy}xx sind bereits 99 Ordner vergeben – Nummer bitte manuell setzen.`);
+  const dir = yy + String(maxN + 1).padStart(2, "0");
+  log(`→ nächste freie Nummer: ${dir}`, "lok");
+  return dir;
 }
 
 $("btnMR").onclick = async () => {
@@ -655,7 +703,7 @@ $("btnMR").onclick = async () => {
 
     // directory number
     let dir = $("glDir").value.trim();
-    if (!dir){ dir = await nextDirNumber(defBranch); $("glDir").value = dir; }
+    if (!dir){ dir = await nextDirNumber(defBranch, fork); $("glDir").value = dir; }
     log(`Ordner: meet-data/bvdk/${dir}`, "lok");
 
     // freshness check: is the fork behind upstream?
